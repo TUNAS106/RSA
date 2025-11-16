@@ -350,7 +350,10 @@ bool isPrimeMillerRabin(const BigInt& n) {
         return true;
     if (n < BigInt(11))
         return false;
-
+    
+    // Kiểm tra số chẵn
+    if ((n.digits[0] & 1) == 0)
+        return false;
     
     long long k = 0;
     BigInt m = n - BigInt(1);
@@ -358,15 +361,17 @@ bool isPrimeMillerRabin(const BigInt& n) {
         m = m / BigInt(2);
         k++;
     }
+    
     const int repeatTime = 20;
     vector<int> smallPrimes = {2, 3, 5, 7, 11, 13, 17, 19, 23};
     
     for (int prime : smallPrimes) {
         BigInt a(prime);
+        if (a >= n) continue;
+        
         if (!millerRabinTest(a, n, k, m))
             return false;
     }
-
     
     random_device rd;
     mt19937 gen(rd());
@@ -374,6 +379,8 @@ bool isPrimeMillerRabin(const BigInt& n) {
         uniform_int_distribution<int> dis(2, 1000000);
         BigInt a(dis(gen));
         a = a % (n - BigInt(3)) + BigInt(2);
+        
+        if (a >= n) continue;
         
         if (!millerRabinTest(a, n, k, m))
             return false;
