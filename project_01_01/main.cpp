@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <random> 
+#include <climits>
 
 using namespace std;
 
@@ -312,6 +313,7 @@ public:
         
         return r;
     }
+    friend BigInt randomBigInt(const BigInt& max, mt19937_64& gen);
     friend BigInt binaryPower(BigInt a, BigInt k, const BigInt& n);
     friend bool millerRabinTest(const BigInt& a, const BigInt& n, long long k, const BigInt& m);
     friend bool isPrimeMillerRabin(const BigInt& n);
@@ -329,6 +331,34 @@ BigInt binaryPower(BigInt a, BigInt k, const BigInt& n) {
         k = k / BigInt(2);
     }
     return res;
+}
+BigInt randomBigInt(const BigInt& max, mt19937_64& gen) {
+    if (max <= BigInt(2)) return BigInt(2);
+    
+    BigInt result;
+    result.digits.clear();
+    
+    
+    size_t numDigits = max.digits.size();
+    
+    uniform_int_distribution<unsigned int> dis(0, UINT_MAX);
+    
+    for (size_t i = 0; i < numDigits; i++) {
+        result.digits.push_back(dis(gen));
+    }
+    
+    result.removeLeadingZeros();
+    
+    if (result.isZero() || result.isOne()) {
+        result = BigInt(2);
+    } else if (result >= max) {
+        result = result % max;
+        if (result < BigInt(2)) {
+            result = BigInt(2);
+        }
+    }
+    
+    return result;
 }
 
 bool millerRabinTest(const BigInt& a, const BigInt& n, long long k, const BigInt& m) {
@@ -351,7 +381,6 @@ bool isPrimeMillerRabin(const BigInt& n) {
     if (n < BigInt(11))
         return false;
     
-    // Kiểm tra số chẵn
     if ((n.digits[0] & 1) == 0)
         return false;
     
@@ -362,7 +391,7 @@ bool isPrimeMillerRabin(const BigInt& n) {
         k++;
     }
     
-    const int repeatTime = 20;
+    const int repeatTime = 40;
     vector<int> smallPrimes = {2, 3, 5, 7, 11, 13, 17, 19, 23};
     
     for (int prime : smallPrimes) {
@@ -374,13 +403,13 @@ bool isPrimeMillerRabin(const BigInt& n) {
     }
     
     random_device rd;
-    mt19937 gen(rd());
-    for (int i = 0; i < repeatTime - smallPrimes.size(); ++i) {
-        uniform_int_distribution<int> dis(2, 1000000);
-        BigInt a(dis(gen));
-        a = a % (n - BigInt(3)) + BigInt(2);
+    mt19937_64 gen(rd());
+    int testsRemaining = repeatTime - min((int)smallPrimes.size(), (int)repeatTime);
+    for (int i = 0; i < testsRemaining; ++i) {
+        BigInt maxVal = n - BigInt(2);
+        if (maxVal <= BigInt(2)) break;
         
-        if (a >= n) continue;
+        BigInt a = randomBigInt(maxVal, gen);
         
         if (!millerRabinTest(a, n, k, m))
             return false;
