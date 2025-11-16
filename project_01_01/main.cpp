@@ -437,7 +437,6 @@ int main(int argc, char* argv[]) {
     BigInt p = BigInt::fromHexLE(pHex);
 
     int res = 0;   
-    // Kiểm tra tính nguyên tố của p
     if (isPrimeMillerRabin(p)) {
         res = 1;
     }
