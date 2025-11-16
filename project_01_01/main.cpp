@@ -391,7 +391,7 @@ bool isPrimeMillerRabin(const BigInt& n) {
         k++;
     }
     
-    const int repeatTime = 40;
+    const int repeatTime = 20;
     vector<int> smallPrimes = {2, 3, 5, 7, 11, 13, 17, 19, 23};
     
     for (int prime : smallPrimes) {
